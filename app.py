@@ -1,7 +1,6 @@
 
-
 import streamlit as st
-
+from database import get_connection
 st.set_page_config(
     page_title="Đăng ký du lịch công ty",
     page_icon="🏖️",
@@ -48,12 +47,43 @@ with st.form("form_dangky"):
 
 if submit:
 
-    st.success("Đăng ký thành công!")
+    try:
 
-    st.write("### Thông tin vừa nhập")
+        conn = get_connection()
 
-    st.write("**Họ tên:**", ho_ten)
-    st.write("**Giới tính:**", gioi_tinh)
-    st.write("**Số điện thoại:**", so_dien_thoai)
-    st.write("**Phòng ban:**", phong_ban)
-    st.write("**Tham gia:**", tham_gia)
+        cursor = conn.cursor()
+
+        sql = """
+        INSERT INTO dangky_dulich
+        (
+            ho_ten,
+            gioi_tinh,
+            so_dien_thoai,
+            phong_ban,
+            tham_gia
+        )
+        VALUES (%s,%s,%s,%s,%s)
+        """
+
+        cursor.execute(
+            sql,
+            (
+                ho_ten,
+                gioi_tinh,
+                so_dien_thoai,
+                phong_ban,
+                tham_gia == "Có tham gia"
+            )
+        )
+
+        conn.commit()
+
+        cursor.close()
+
+        conn.close()
+
+        st.success("🎉 Đăng ký thành công!")
+
+    except Exception as e:
+
+        st.error(f"Lỗi: {e}")
